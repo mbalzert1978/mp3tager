@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "mp3tager"
+version = "0.1.0"
+description = ""
+authors = ["Markus Iorio <mbalzert@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+eyed3 = "^0.9.7"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.10.0"
+mypy = "^0.982"
+pylint = "^2.15.5"
+flake8 = "^5.0.4"
+
+
+[tool.poetry.group.flake8.dependencies]
+pycodestyle = "^2.9.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
