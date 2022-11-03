@@ -44,15 +44,15 @@ def __get_mp3_info_and_copy_with_new_filename(
         return
     artist_dir: Path = __create_path_from_artist(destination, audio)
     if not artist_dir.exists():
-        log.info(f"creating folder: {artist_dir}")
+        log.info("creating folder: %s", artist_dir)
         artist_dir.mkdir()
     album_dir: Path = __create_path_from_album(artist_dir, audio)
     if not album_dir.exists():
-        log.info(f"creating folder: {album_dir}")
+        log.info("creating folder: %s", album_dir)
         album_dir.mkdir()
     file: Path = __create_path_from_title(album_dir, audio)
     file = file.with_suffix(ext)
-    log.info(f"creating file: {file}")
+    log.info("creating file: %s", file)
     _ = shutil.copy(source, file)
 
 
