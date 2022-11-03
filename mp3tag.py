@@ -17,32 +17,33 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 
-def mp3_tag(source: Path, destination: Path) -> None:
+def mp3_tag(root: Path, target: Path) -> None:
     """Search for .mp3 files in the `source` and saves them in the
     `destination`.
 
     The files are saved if possible as follows artist / album / title.mp3
     any missing information will be compensated with uuid's.
     """
-    for item in source.iterdir():
+    for item in root.iterdir():
         if item.is_dir():
-            mp3_tag(item, destination)
+            mp3_tag(item, target)
         if item.is_file():
-            __get_mp3_info_and_copy_with_new_filename(item, destination)
+            __get_mp3_info_and_copy_with_new_filename(item, target)
 
 
 def __get_mp3_info_and_copy_with_new_filename(
-    source: Path, destination: Path
+    root: Path,
+    target: Path,
 ) -> None:
-    audio: eyed3.AudioFile = __get_audio_object(source)
-    ext = __extract_suffix(source)
+    audio: eyed3.AudioFile = __get_audio_object(root)
+    ext = __extract_suffix(root)
     if not audio:
         log.info("No audio File.")
         return
     if not audio.tag:
         log.error("No audio tag on mp3 file.")
         return
-    artist_dir: Path = __create_path_from_artist(destination, audio)
+    artist_dir: Path = __create_path_from_artist(target, audio)
     if not artist_dir.exists():
         log.info("creating folder: %s", artist_dir)
         artist_dir.mkdir()
@@ -53,13 +54,13 @@ def __get_mp3_info_and_copy_with_new_filename(
     file: Path = __create_path_from_title(album_dir, audio)
     file = file.with_suffix(ext)
     log.info("creating file: %s", file)
-    _ = shutil.copy(source, file)
+    _ = shutil.copy(root, file)
 
 
-def __sanatize(input: str) -> str:
+def __sanatize(value: str) -> str:
     return "".join(
         letter
-        for letter in input
+        for letter in value
         if letter
         in (
             letter
@@ -133,4 +134,4 @@ if __name__ == "__main__":
     except ValueError:
         print("Source and destination directorys are needed.")
         sys.exit()
-    mp3_tag(source=Path(source), destination=Path(destination))
+    mp3_tag(root=Path(source), target=Path(destination))
