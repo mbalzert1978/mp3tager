@@ -40,6 +40,9 @@ def _get_mp3_info_and_copy_with_new_filename(root: Path, target: Path) -> None:
     if not audio.tag:
         log.error("No mp3 tag info, skipping.")
         return
+    if not target.is_dir():
+        log.info("Target folder does not exist, creating folder.")
+        target.mkdir()
     artist_dir = _create_path_sanatize(
         target, (audio.tag.artist, audio.tag.album, audio.tag.title)
     )
