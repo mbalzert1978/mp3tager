@@ -28,36 +28,39 @@ def mp3_tag(root: Path, target: Path) -> None:
         if item.is_dir():
             mp3_tag(item, target)
         if item.is_file():
-            __get_mp3_info_and_copy_with_new_filename(item, target)
+            _get_mp3_info_and_copy_with_new_filename(item, target)
 
 
-def __get_mp3_info_and_copy_with_new_filename(
-    root: Path,
-    target: Path,
-) -> None:
-    audio: eyed3.AudioFile = __get_audio_object(root)
-    ext = __extract_suffix(root)
+def _get_mp3_info_and_copy_with_new_filename(root: Path, target: Path) -> None:
+    audio: eyed3.AudioFile = _get_audio_object(root)
+    ext = _extract_suffix(root)
     if not audio:
-        log.info("No audio File.")
+        log.info("No audio file, skipping.")
         return
     if not audio.tag:
-        log.error("No audio tag on mp3 file.")
+        log.error("No mp3 tag info, skipping.")
         return
-    artist_dir: Path = __create_path_from_artist(target, audio)
+    artist_dir = _create_path_sanatize(
+        target, (audio.tag.artist, audio.tag.album, audio.tag.title)
+    )
     if not artist_dir.exists():
         log.info("creating folder: %s", artist_dir)
         artist_dir.mkdir()
-    album_dir: Path = __create_path_from_album(artist_dir, audio)
+    album_dir = _create_path_sanatize(
+        artist_dir, (audio.tag.album, audio.tag.artist, audio.tag.title)
+    )
     if not album_dir.exists():
         log.info("creating folder: %s", album_dir)
         album_dir.mkdir()
-    file: Path = __create_path_from_title(album_dir, audio)
+    file = _create_path_sanatize(
+        album_dir, (audio.tag.title, audio.tag.artist, audio.tag.album)
+    )
     file = file.with_suffix(ext)
     log.info("creating file: %s", file)
     _ = shutil.copy(root, file)
 
 
-def __sanatize(value: str) -> str:
+def _sanatize(value: str) -> str:
     return "".join(
         letter
         for letter in value
@@ -75,62 +78,27 @@ def __sanatize(value: str) -> str:
     ).strip()
 
 
-def __create_path_from_artist(root: Path, audio: eyed3.AudioFile) -> Path:
-    if audio.tag.artist:
-        value = audio.tag.artist
-    elif audio.tag.album:
-        log.error("No artist => taking album")
-        value = audio.tag.album
-    elif audio.tag.title:
-        log.error("No album => taking title")
-        value = audio.tag.title
-    else:
-        log.error("Nothing to get generate uuid.")
-        value = str(uuid.uuid4())
-    return root / __sanatize(value)
+def _create_path_sanatize(root: Path, tags: tuple[str | None, ...]) -> Path:
+    for tag in tags:
+        if not tag:
+            continue
+        return root / _sanatize(tag)
+    log.error("No valid tag info, generating uuid string.")
+    uuid_str = str(uuid.uuid4())
+    return root / _sanatize(uuid_str)
 
 
-def __create_path_from_album(root: Path, audio: eyed3.AudioFile) -> Path:
-    if audio.tag.album:
-        value = audio.tag.album
-    elif audio.tag.artist:
-        log.error("No album => taking artist")
-        value = audio.tag.artist
-    elif audio.tag.title:
-        log.error("No artist => taking title")
-        value = audio.tag.title
-    else:
-        log.error("Nothing to get generate uuid.")
-        value = str(uuid.uuid4())
-    return root / __sanatize(value)
-
-
-def __create_path_from_title(root: Path, audio: eyed3.AudioFile) -> Path:
-    if audio.tag.title:
-        value = audio.tag.title
-    elif audio.tag.artist:
-        log.error("No title => taking artist")
-        value = audio.tag.artist
-    elif audio.tag.album:
-        log.error("No artist => taking album")
-        value = audio.tag.album
-    else:
-        log.error("Nothing to get generate uuid.")
-        value = str(uuid.uuid4())
-    return root / __sanatize(value)
-
-
-def __extract_suffix(item: Path) -> str:
+def _extract_suffix(item: Path) -> str:
     return item.suffix
 
 
-def __get_audio_object(item) -> eyed3.AudioFile | None:
+def _get_audio_object(item) -> eyed3.AudioFile | None:
     return eyed3.load(item)
 
 
 if __name__ == "__main__":
     try:
-        _, source, destination = sys.argv
+        *_, source, destination = sys.argv
     except ValueError:
         print("Source and destination directorys are needed.")
         sys.exit()
