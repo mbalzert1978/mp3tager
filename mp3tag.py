@@ -13,8 +13,6 @@ logging.basicConfig(
     filename=datetime.now().strftime("mp3tag_%H_%M_%d_%m_%Y.log"),
     encoding="utf-8",
     level=logging.INFO,
-    format="[%(asctime)s]:[%(message)s]",
-    datefmt="%d.%m.%Y",
 )
 
 log = logging.getLogger(__name__)
