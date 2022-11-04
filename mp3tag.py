@@ -4,14 +4,17 @@ import shutil
 import string
 import sys
 import uuid
+from datetime import datetime
 from pathlib import Path
 
 import eyed3
 
 logging.basicConfig(
-    filename="mp3tagger.log",
+    filename=datetime.now().strftime("mp3tag_%H_%M_%d_%m_%Y.log"),
     encoding="utf-8",
     level=logging.INFO,
+    format="[%(asctime)s]:[%(message)s]",
+    datefmt="%d.%m.%Y",
 )
 
 log = logging.getLogger(__name__)
@@ -41,7 +44,7 @@ def _get_mp3_info_and_copy_with_new_filename(root: Path, target: Path) -> None:
         log.error("No mp3 tag info, skipping.")
         return
     if not target.is_dir():
-        log.info("Target folder does not exist, creating folder.")
+        log.info("Target directory does not exist, creating directory.")
         target.mkdir()
     artist_dir = _create_path_sanatize(
         target, (audio.tag.artist, audio.tag.album, audio.tag.title)
