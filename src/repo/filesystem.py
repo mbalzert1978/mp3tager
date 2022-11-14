@@ -1,49 +1,22 @@
 import os
+import shutil
 from pathlib import Path
-
-from .media_file import MediaFileRepo
-
-AUDIO_FILE_EXTENSIONS = [
-    ".asf",
-    ".wma",
-    ".wmv",
-    ".wm",
-    ".mpg",
-    ".mpeg",
-    ".m1v",
-    ".mp2",
-    ".mp3",
-    ".mpa",
-    ".mpe",
-    ".wav",
-    ".m4a",
-    ".flac",
-    ".ogg",
-]
+from typing import Generator, Protocol
 
 
-def read_paths(root, filesystem: MediaFileRepo = MediaFileRepo()):
-    media_files = {}
-    for folder, _, files in os.walk(root):
-        for file_name in files:
-            file_path: Path = Path(folder) / file_name
-            if file_path.suffix in AUDIO_FILE_EXTENSIONS:
-                media_files[file_path] = filesystem.load(file_path)
-    return media_files
+class File(Protocol):
+    def read(self, root: Path) -> Generator[Path, None, None]:
+        ...
+
+    def copy(self, root: Path, dest: Path) -> None:
+        ...
 
 
-def determine_actions(source_hashes, dest_hashes, source_folder, dest_folder):
-    for sha, filename in source_hashes.items():
-        if sha not in dest_hashes:
-            sourcepath = Path(source_folder) / filename
-            destpath = Path(dest_folder) / filename
-            yield "COPY", sourcepath, destpath
+class FileSystem:
+    def read(self, root: Path) -> Generator[Path, None, None]:
+        for folder, _, files in os.walk(root):
+            for file_name in files:
+                yield Path(folder) / file_name
 
-        elif dest_hashes[sha] != filename:
-            olddestpath = Path(dest_folder) / dest_hashes[sha]
-            newdestpath = Path(dest_folder) / filename
-            yield "MOVE", olddestpath, newdestpath
-
-    for sha, filename in dest_hashes.items():
-        if sha not in source_hashes:
-            yield "DELETE", dest_folder / filename
+    def copy(self, root: Path, dest: Path) -> None:
+        shutil.copy(root, dest)

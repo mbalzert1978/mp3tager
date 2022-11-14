@@ -1,13 +1,12 @@
-from collections import namedtuple
-import os
 from pathlib import Path
-import shutil
 import string
 import sys
-from typing import Generator
 import uuid
-from mediafile import MediaFile
 from ShazamAPI import Shazam
+
+from .repo.tag_reader import Reader, TagReader
+
+from .repo.filesystem import File, FileSystem
 
 
 AUDIO_FILE_EXTENSIONS = [
@@ -29,35 +28,18 @@ AUDIO_FILE_EXTENSIONS = [
 ]
 
 
-class FileSystem:
-    def read(self, root: Path) -> Generator[Path, None, None]:
-        for folder, _, files in os.walk(root):
-            for file_name in files:
-                yield Path(folder) / file_name
-
-    def copy(self, root: Path, dest: Path) -> None:
-        shutil.copy(root, dest)
-
-
-empty_tags = namedtuple("empty_tags", ["artist", "album", "title"])
-
-
 def ref_mp3tag(
-    source_folder: Path, target: Path, file_system: FileSystem = FileSystem()
+    source_folder: Path,
+    target: Path,
+    file_system: File = FileSystem(),
+    tag_reader: Reader = TagReader(),
 ) -> None:
     files = file_system.read(source_folder)
     for file in files:
         ext = file.suffix
         if ext not in AUDIO_FILE_EXTENSIONS:
             continue
-        try:
-            tags = MediaFile(file).as_dict()
-        except Exception:
-            tags = {
-                "artist": "",
-                "album": "",
-                "title": "",
-            }
+        tags = tag_reader.get(file)
         destination = create_folder_from_tag(target, ext, tags)
         file_system.copy(file, destination)
 
