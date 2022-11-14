@@ -8,6 +8,8 @@ from datetime import datetime
 from pathlib import Path
 
 import eyed3
+from mediafile import MediaFile
+from ShazamAPI import Shazam
 
 logging.basicConfig(
     filename=datetime.now().strftime("mp3tag_%H_%M_%d_%m_%Y.log"),

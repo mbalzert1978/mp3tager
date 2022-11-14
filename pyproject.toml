@@ -7,7 +7,9 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+shazamapi = {git = "https://github.com/notpushkin/ShazamAPI.git"}
 eyed3 = "^0.9.7"
+mediafile = "^0.10.1"
 
 
 [tool.poetry.group.dev.dependencies]
