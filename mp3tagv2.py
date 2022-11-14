@@ -4,9 +4,9 @@ import sys
 import uuid
 from ShazamAPI import Shazam
 
-from .repo.tag_reader import Reader, TagReader
+from src.repo.tag_reader import Reader, TagReader
 
-from .repo.filesystem import File, FileSystem
+from src.repo.filesystem import File, FileSystem
 
 
 AUDIO_FILE_EXTENSIONS = [
