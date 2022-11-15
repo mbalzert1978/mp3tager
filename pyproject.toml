@@ -10,6 +10,7 @@ python = "^3.10"
 shazamapi = {git = "https://github.com/notpushkin/ShazamAPI.git"}
 eyed3 = "^0.9.7"
 mediafile = "^0.10.1"
+python-dotenv = "^0.21.0"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -10,8 +10,12 @@ __pycache__/
 # C extensions
 *.so
 
-#ffmpeg
+# fiddle stuff
+fiddle.py
+
+#ffmpeg & media
 ffmpeg
+*.mp3
 
 # Distribution / packaging
 .Python

@@ -1,91 +1,32 @@
-from pathlib import Path
-import string
 import sys
 import uuid
-from ShazamAPI import Shazam
+from pathlib import Path
 
-from src.repo.tag_reader import Reader, TagReader
+from src.filesystem.base import FileSystem
+from src.filesystem.mp3_tag_filesystem import MediaTagFileSystem
+from src.reader.base import Reader
+from src.reader.tag_reader import TagReader
 
-from src.repo.filesystem import File, FileSystem
-
-
-AUDIO_FILE_EXTENSIONS = [
-    ".asf",
-    ".wma",
-    ".wmv",
-    ".wm",
-    ".mpg",
-    ".mpeg",
-    ".m1v",
-    ".mp2",
-    ".mp3",
-    ".mpa",
-    ".mpe",
-    ".wav",
-    ".m4a",
-    ".flac",
-    ".ogg",
-]
+from .src.utilities.string import sanatize
 
 
 def ref_mp3tag(
     source_folder: Path,
-    target: Path,
-    file_system: File = FileSystem(),
-    tag_reader: Reader = TagReader(),
+    destination_folder: Path,
+    file_system: FileSystem = MediaTagFileSystem(),
+    reader: Reader = TagReader(),
 ) -> None:
-    files = file_system.read(source_folder)
+    files = file_system.get(source_folder)
     for file in files:
         ext = file.suffix
-        if ext not in AUDIO_FILE_EXTENSIONS:
-            continue
-        tags = tag_reader.get(file)
-        destination = create_folder_from_tag(target, ext, tags)
-        file_system.copy(file, destination)
-
-
-def create_folder_from_tag(target: Path, ext: str, tags: dict) -> Path:
-    artist = _sanatize(tags.get("artist") or "unkown_artist")
-    album = _sanatize(tags.get("album") or "unknown_album")
-    title = _sanatize(tags.get("title") or str(uuid.uuid4()))
-    dest: Path = Path(target) / artist / album / title
-    try:
-        dest.parent.mkdir(parents=True, exist_ok=False)
-    except FileExistsError:
-        pass
-    dest = dest.with_suffix(ext)
-    return dest
-
-
-def shazam_it(root, tag) -> None:
-    mp3_file_content_to_recognize = root.read_bytes()
-    recognize_generator = Shazam(
-        lang="de", timezone="Europe/Berlin", region="DE"
-    ).recognize_song(mp3_file_content_to_recognize)
-    _, resp = next(recognize_generator)
-    if resp.get("matches"):
-        tag.title = resp.get("track", {}).get("title")
-        tag.artist = resp.get("track", {}).get("subtitle")
-        tag.genre = resp.get("track", {}).get("genres", {}).get("primary")
-
-
-def _sanatize(value: str) -> str:
-    return "".join(
-        letter
-        for letter in value
-        if letter
-        in (
-            letter
-            for letter in (
-                string.ascii_lowercase
-                + string.ascii_uppercase
-                + string.digits
-                + " "
-                + "-"
-                + "_"
-            )
-        )
-    ).strip()
+        tags = reader.read(file)
+        artist = sanatize(tags.get("artist", "unkown_artist"))
+        album = sanatize(tags.get("album", "unknown_album"))
+        title = sanatize(tags.get("title", str(uuid.uuid4())))
+        path = file_system.mkpath(destination_folder, (artist, album, title))
+        file_system.mkdir(path)
+        path = path.with_suffix(ext)
+        file_system.copy(file, path)
 
 
 if __name__ == "__main__":
@@ -94,4 +35,6 @@ if __name__ == "__main__":
     except ValueError:
         print("Source and destination directorys are needed.")
         sys.exit()
-    ref_mp3tag(source_folder=Path(source), target=Path(target_folder))
+    ref_mp3tag(
+        source_folder=Path(source), destination_folder=Path(target_folder)
+    )
