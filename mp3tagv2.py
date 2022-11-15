@@ -4,17 +4,16 @@ from pathlib import Path
 
 from src.filesystem.base import FileSystem
 from src.filesystem.mp3_tag_filesystem import MediaTagFileSystem
+from src.reader.audd_reader import AudDReader
 from src.reader.base import Reader
-from src.reader.tag_reader import TagReader
-
-from .src.utilities.string import sanatize
+from src.utilities.string import sanatize
 
 
 def ref_mp3tag(
     source_folder: Path,
     destination_folder: Path,
     file_system: FileSystem = MediaTagFileSystem(),
-    reader: Reader = TagReader(),
+    reader: Reader = AudDReader(),
 ) -> None:
     files = file_system.get(source_folder)
     for file in files:
