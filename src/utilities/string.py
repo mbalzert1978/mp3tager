@@ -22,3 +22,24 @@ def sanatize(value: str) -> str:
             )
         )
     ).strip()
+
+
+def new_sanatize(value: str) -> str:
+    invalid = (
+        "~",
+        '"',
+        "#",
+        "%",
+        "&",
+        "*",
+        ":",
+        "<",
+        ">",
+        "?",
+        "/",
+        "\\",
+        "{",
+        "|",
+        "}",
+    )
+    return "".join(char for char in value if char not in invalid).strip()

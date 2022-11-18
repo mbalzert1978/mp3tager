@@ -6,20 +6,21 @@ from typing import Generator
 
 class MediaTagFileSystem:
     AUDIO_FILE_EXTENSIONS = (
-        ".asf",
-        ".wma",
-        ".wm",
-        ".mpg",
-        ".mpeg",
-        ".m1v",
-        ".mp2",
-        ".mp3",
-        ".mpa",
-        ".mpe",
-        ".wav",
+        ".alac",
         ".m4a",
+        ".aac",
+        ".ape",
+        ".mp3",
+        ".mp4",
+        ".wav",
         ".flac",
         ".ogg",
+        ".opus",
+        ".wv",
+        ".mpc",
+        ".asf",
+        ".aiff",
+        ".dsf",
     )
 
     def get(self, root: Path) -> Generator[Path, None, None]:
@@ -36,6 +37,4 @@ class MediaTagFileSystem:
         dest.parent.mkdir(parents=True, exist_ok=True)
 
     def mkpath(self, target: Path, folders: tuple[str, ...]) -> Path:
-        for folder in folders:
-            target /= folder
-        return target
+        return target.joinpath(*folders)

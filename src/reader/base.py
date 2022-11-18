@@ -3,5 +3,5 @@ from typing import Protocol
 
 
 class Reader(Protocol):
-    def read(self, file: Path) -> dict | dict[str, str]:
+    def read(self, file_path: Path) -> dict[str, str]:
         ...
