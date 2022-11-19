@@ -1,3 +1,4 @@
+import asyncio
 import os
 from pathlib import Path
 
@@ -5,10 +6,12 @@ import acrcloud
 import requests
 from dotenv import load_dotenv
 from mediafile import MediaFile
+from shazamio import Shazam
 
 from ..models.acr_model import ACRCloudModel
 from ..models.aud_model import AudDModel
 from ..models.base import ModelBase
+from ..models.tag_enum import Tags
 from ..models.tag_model import Result, TagModel
 from .base import Reader
 
@@ -85,33 +88,9 @@ class ACRCloudReader(Reader):
         }
 
 
-class MultiReader(Reader):
-    def __init__(self, readers: tuple[Reader, ...]) -> None:
-        self.readers = readers
-
-    def read(self, file_path: Path) -> dict | dict[str, str]:
-        responses = []
-        for reader in self.readers:
-            response = reader.read(file_path=file_path).get_tags()
-            if not all(self._get_tags(response)):
-                responses.append(response)
-                continue
-            return response
-        return self.evaluate_responses(responses)
-
-    def evaluate_responses(self, data: list[dict]) -> dict[str, str]:
-        temp = {"artist": "", "album": "", "title": ""}
-        for response in data:
-            for key, value in response.items():
-                if not value:
-                    continue
-                if value not in temp.values():
-                    temp[key] = value
-        return temp
-
-    def _get_tags(self, response: dict) -> tuple[str | None, ...]:
-        return (
-            response.get("artist"),
-            response.get("album"),
-            response.get("title"),
-        )
+class ShazamIOReader(Reader):
+    async def read(self, file_path: Path) -> ModelBase:
+        shaz = Shazam()
+        out = await shaz.recognize_song(file_path)
+        print(out)
+        print()

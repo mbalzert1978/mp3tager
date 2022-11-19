@@ -5,13 +5,13 @@ from pathlib import Path
 from src.filesystem import MediaTagFileSystem
 
 
-def test_get_media_files() -> None:
+def test_get_all_media_files() -> None:
     media = MediaTagFileSystem()
     try:
         source = tempfile.mkdtemp()
         expected = (
             (Path(source) / "my-file.mp3"),
-            w(Path(source) / "my-file.ogg"),
+            (Path(source) / "my-file.ogg"),
             (Path(source) / "my-file.flac"),
             (Path(source) / "my-file"),
             (Path(source) / "my-file.exe"),
@@ -22,3 +22,17 @@ def test_get_media_files() -> None:
         assert len(files) == 3
     finally:
         shutil.rmtree(source)
+
+
+def test_copy_files() -> None:
+    media = MediaTagFileSystem()
+    try:
+        source = tempfile.mkdtemp()
+        destination = tempfile.mkdtemp()
+        expected: Path = Path(source) / "my-file.mp3"
+        expected.touch()
+        media.copy(Path(expected), Path(destination))
+        assert expected in destination
+    finally:
+        shutil.rmtree(source)
+        shutil.rmtree(destination)

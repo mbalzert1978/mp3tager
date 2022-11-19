@@ -1,135 +1,135 @@
 from __future__ import annotations
 
-from typing import Any, List
-from uuid import uuid4
+from typing import Any
 
 from pydantic import BaseModel
 
 from ..utilities.string import sanatize
+from .tag_enum import Tags
 
 
 class Preview(BaseModel):
-    url: str
+    url: str | None
 
 
 class Artwork(BaseModel):
-    width: int
-    height: int
-    url: str
-    bgColor: str
-    textColor1: str
-    textColor2: str
-    textColor3: str
-    textColor4: str
+    width: int | None
+    height: int | None
+    url: str | None
+    bgColor: str | None
+    textColor1: str | None
+    textColor2: str | None
+    textColor3: str | None
+    textColor4: str | None
 
 
 class PlayParams(BaseModel):
-    id: str
-    kind: str
+    id: str | None
+    kind: str | None
 
 
 class AppleMusic(BaseModel):
-    previews: List[Preview]
-    artwork: Artwork
-    artistName: str
-    url: str
-    discNumber: int
-    genreNames: List[str]
-    durationInMillis: int
-    releaseDate: str
-    name: str
-    isrc: str
-    albumName: str
-    playParams: PlayParams
-    trackNumber: int
-    composerName: str
+    previews: list[Preview] | None
+    artwork: Artwork | None
+    artistName: str | None
+    url: str | None
+    discNumber: int | None
+    genreNames: list[str] | None
+    durationInMillis: int | None
+    releaseDate: str | None
+    name: str | None
+    isrc: str | None
+    albumName: str | None
+    playParams: PlayParams | None
+    trackNumber: int | None
+    composerName: str | None
 
 
 class ExternalUrls(BaseModel):
-    spotify: str
+    spotify: str | None
 
 
 class Artist(BaseModel):
-    name: str
-    id: str
-    uri: str
-    href: str
-    external_urls: ExternalUrls
+    name: str | None
+    id: str | None
+    uri: str | None
+    href: str | None
+    external_urls: ExternalUrls | None
 
 
 class Image(BaseModel):
-    height: int
-    width: int
-    url: str
+    height: int | None
+    width: int | None
+    url: str | None
 
 
 class ExternalUrls1(BaseModel):
-    spotify: str
+    spotify: str | None
 
 
 class Album(BaseModel):
-    name: str
-    artists: List[Artist]
-    album_group: str
-    album_type: str
-    id: str
-    uri: str
-    available_markets: List[str]
-    href: str
-    images: List[Image]
-    external_urls: ExternalUrls1
-    release_date: str
-    release_date_precision: str
+    name: str | None
+    artists: list[Artist] | None
+    album_group: str | None
+    album_type: str | None
+    id: str | None
+    uri: str | None
+    available_markets: list[str] | None
+    href: str | None
+    images: list[Image] | None
+    external_urls: ExternalUrls1 | None
+    release_date: str | None
+    release_date_precision: str | None
 
 
 class ExternalIds(BaseModel):
-    isrc: str
+    isrc: str | None
 
 
 class ExternalUrls2(BaseModel):
-    spotify: str
+    spotify: str | None
 
 
 class Artist1(BaseModel):
-    name: str
-    id: str
-    uri: str
-    href: str
-    external_urls: ExternalUrls2
+    name: str | None
+    id: str | None
+    uri: str | None
+    href: str | None
+    external_urls: ExternalUrls2 | None
 
 
 class ExternalUrls3(BaseModel):
-    spotify: str
+    spotify: str | None
 
 
 class Spotify(BaseModel):
-    album: Album
-    external_ids: ExternalIds
-    popularity: int
-    is_playable: Any
-    linked_from: Any
-    artists: List[Artist1]
-    available_markets: List[str]
-    disc_number: int
-    duration_ms: int
-    explicit: bool
-    external_urls: ExternalUrls3
-    href: str
-    id: str
-    name: str
-    preview_url: str
-    track_number: int
-    uri: str
+    album: Album | None
+    external_ids: ExternalIds | None
+    popularity: int | None
+    is_playable: Any | None
+    linked_from: Any | None
+    artists: list[Artist1] | None
+    available_markets: list[str] | None
+    disc_number: int | None
+    duration_ms: int | None
+    explicit: bool | None
+    external_urls: ExternalUrls3 | None
+    href: str | None
+    id: str | None
+    name: str | None
+    preview_url: str | None
+    track_number: int | None
+    uri: str | None
 
 
 class Result(BaseModel):
-    artist: str
-    title: str
-    album: str
-    release_date: str
-    label: str
-    timecode: str
-    song_link: str
+    artist: str | None
+    title: str | None
+    album: str | None
+    release_date: str | None
+    label: str | None
+    timecode: str | None
+    song_link: str | None
     apple_music: AppleMusic | None
     spotify: Spotify | None
 
@@ -141,12 +141,27 @@ class AudDModel(BaseModel):
     def get_tags(self) -> dict[str, str]:
         if not self.result:
             return {
-                "artist": "unknown_artist",
-                "album": "unknown_album",
-                "title": sanatize(str(uuid4())),
+                "artist": Tags.ARTIST.value,
+                "album": Tags.ALBUM.value,
+                "title": Tags.TITLE.value,
             }
         return {
             "artist": sanatize(self.result.artist),
             "album": sanatize(self.result.album),
             "title": sanatize(self.result.title),
         }
+
+    def get_artist(self) -> str:
+        if not self.result:
+            return Tags.ARTIST.value
+        return sanatize(self.result.artist)
+
+    def get_album(self) -> str:
+        if not self.result:
+            return Tags.ALBUM.value
+        return sanatize(self.result.album)
+
+    def get_title(self) -> str:
+        if not self.result:
+            return Tags.TITLE.value
+        return sanatize(self.result.title)

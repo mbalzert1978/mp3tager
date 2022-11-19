@@ -6,6 +6,7 @@ from uuid import uuid4
 from pydantic import BaseModel, validator
 
 from ..utilities.string import sanatize
+from .tag_enum import Tags
 
 
 class Result(BaseModel):
@@ -107,3 +108,18 @@ class TagModel(BaseModel):
             "album": sanatize(self.result.album),
             "title": sanatize(self.result.title),
         }
+
+    def get_artist(self) -> str:
+        if not self.result:
+            return Tags.ARTIST.value
+        return sanatize(self.result.artist)
+
+    def get_album(self) -> str:
+        if not self.result:
+            return Tags.ALBUM.value
+        return sanatize(self.result.album)
+
+    def get_title(self) -> str:
+        if not self.result:
+            return Tags.TITLE.value
+        return sanatize(self.result.title)

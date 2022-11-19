@@ -1,61 +1,61 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
-from uuid import uuid4
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 from ..utilities.sequnce import fetch_one
 from ..utilities.string import sanatize
+from .tag_enum import Tags
 
 
 class Status(BaseModel):
-    version: str
-    msg: str
-    code: int
+    version: str | None
+    msg: str | None
+    code: int | None
 
 
 class Lang(BaseModel):
-    name: str
-    code: str
+    name: str | None
+    code: str | None
 
 
 class Artist(BaseModel):
-    name: str
-    langs: Optional[List[Lang]] = None
+    name: str | None
+    langs: list[Lang] = None
 
 
 class Album(BaseModel):
-    name: str
+    name: str | None
 
 
 class Genre(BaseModel):
-    name: str
+    name: str | None
 
 
 class MusicItem(BaseModel):
-    external_metadata: Dict[str, Any]
-    label: str
-    db_begin_time_offset_ms: int
-    db_end_time_offset_ms: int
-    sample_begin_time_offset_ms: int
-    sample_end_time_offset_ms: int
-    play_offset_ms: int
-    result_from: int
-    duration_ms: int
-    artists: List[Artist]
-    external_ids: Dict[str, Any]
-    acrid: str
-    title: str
-    album: Album
-    score: int
-    release_date: str
-    genres: Optional[List[Genre]] = None
+    external_metadata: dict[str, Any] | None
+    label: str | None
+    db_begin_time_offset_ms: int | None
+    db_end_time_offset_ms: int | None
+    sample_begin_time_offset_ms: int | None
+    sample_end_time_offset_ms: int | None
+    play_offset_ms: int | None
+    result_from: int | None
+    duration_ms: int | None
+    artists: list[Artist] | None
+    external_ids: dict[str, Any] | None
+    acrid: str | None
+    title: str | None
+    album: Album | None
+    score: int | None
+    release_date: str | None
+    genres: list[Genre] = None
 
 
 class Result(BaseModel):
-    music: List[MusicItem]
-    timestamp_utc: str
+    music: list[MusicItem] | None
+    timestamp_utc: str | None
 
 
 class ACRCloudModel(BaseModel):
@@ -64,16 +64,36 @@ class ACRCloudModel(BaseModel):
     result: Result | None = Field(alias="metadata")
     cost_time: float | None
 
+    @property
+    def musik_item(self) -> MusicItem | None:
+        if not self.result:
+            return None
+        return fetch_one(self.result.music)
+
     def get_tags(self) -> dict[str, str]:
         if not self.result:
             return {
-                "artist": "unknown_artist",
-                "album": "unknown_album",
-                "title": sanatize(str(uuid4())),
+                "artist": Tags.ARTIST.value,
+                "album": Tags.ALBUM.value,
+                "title": Tags.TITLE.value,
             }
-        music_item: MusicItem = fetch_one(self.result.music)
         return {
-            "artist": sanatize(fetch_one(music_item.artists).name),
-            "album": sanatize(music_item.album.name),
-            "title": sanatize(music_item.title),
+            "artist": sanatize(fetch_one(self.musik_item.artists).name),
+            "album": sanatize(self.musik_item.album.name),
+            "title": sanatize(self.musik_item.title),
         }
+
+    def get_artist(self) -> str:
+        if not self.result:
+            return Tags.ARTIST.value
+        return sanatize(fetch_one(self.musik_item.artists).name)
+
+    def get_album(self) -> str:
+        if not self.result:
+            return Tags.ALBUM.value
+        return sanatize(self.musik_item.album.name)
+
+    def get_title(self) -> str:
+        if not self.result:
+            return Tags.TITLE.value
+        return sanatize(self.musik_item.title)
