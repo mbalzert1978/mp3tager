@@ -1,34 +1,33 @@
 import os
-from collections import defaultdict
 from pathlib import Path
 
+import acrcloud
 import requests
 from dotenv import load_dotenv
-from mediafile import FileTypeError, MediaFile, UnreadableFileError
+from mediafile import MediaFile
 
+from ..models.acr_model import ACRCloudModel
+from ..models.aud_model import AudDModel
+from ..models.base import ModelBase
+from ..models.tag_model import Result, TagModel
 from .base import Reader
 
 
 class TagReader(Reader):
-    def read(self, file_path: Path) -> dict[str, str]:
-        try:
-            return MediaFile(file_path).as_dict()
-        except (FileTypeError, UnreadableFileError):
-            return {"artist": "", "album": "", "title": ""}
+    def read(self, file_path: Path) -> ModelBase:
+        result = Result(**MediaFile(file_path).as_dict())
+        return TagModel(result=result)
 
 
 class AudDReader(Reader):
-    """
-    Read media files and return there tags.
-
-    Returns:
-        Calls audd.io api with 300kb data from the file
-        to recognize music in audio files
+    """Uses audd.io api with 500kb data from the file
+    to recognize music in media files.
     """
 
     URI = "https://api.audd.io/"
+    BYTES_TO_READ = 500_000
 
-    def read(self, file_path: Path) -> dict[str, str]:
+    def read(self, file_path: Path) -> ModelBase:
         """
         Call api and create tags from received data.
 
@@ -36,36 +35,54 @@ class AudDReader(Reader):
             file: media file
 
         Returns:
-            Dictionary with `"artists"`, `"album"` and `"title"`
+            ModelBase
         """
 
         data = self._prepare_data()
         with file_path.open("rb") as file:
-            files = {"file": file.read(300000)}
+            files = {"file": file.read(self.BYTES_TO_READ)}
             return self._call_api(data, files)
 
     def _call_api(
         self, data: dict[str, str], files: dict[str, bytes]
-    ) -> dict[str, str]:
+    ) -> ModelBase:
         with requests.session() as session:
             response = session.post(self.URI, data=data, files=files)
-            api_data = response.json() if response else {}
-        return api_data.get("result")
+            response.encoding = "utf-8"
+            return AudDModel(**response.json())
 
     def _prepare_data(self) -> dict[str, str]:
         return {
-            "api_token": self._get_api_key(),
+            "api_token": os.getenv("API_KEY"),
             "return": "apple_music,spotify",
         }
 
-    def _get_api_key(self) -> str:
+
+class ACRCloudReader(Reader):
+    """Uses acrcloud.com api with 1mb data from the file
+    to recognize music in media files.
+    """
+
+    def read(self, file_path: Path) -> ModelBase:
+        """
+        Call api and create tags from received data.
+
+        Args:
+            file: media file
+
+        Returns:
+            ModelBase
+        """
+        provider = acrcloud.ACRcloud(self._prepare_credentials())
+        return ACRCloudModel(**provider.recognize_audio(file_path))
+
+    def _prepare_credentials(self) -> str:
         load_dotenv()
-        if not (api_key := os.getenv("API_KEY")):
-            raise KeyError(
-                "No api key found in environ. "
-                f"Please provide a valid api key from {self.URI} via .env"
-            )
-        return api_key
+        return {
+            "key": os.getenv("ACCESS_KEY"),
+            "secret": os.getenv("SECRET_KEY"),
+            "host": os.getenv("ACR_HOST"),
+        }
 
 
 class MultiReader(Reader):
@@ -75,7 +92,7 @@ class MultiReader(Reader):
     def read(self, file_path: Path) -> dict | dict[str, str]:
         responses = []
         for reader in self.readers:
-            response = reader.read(file_path=file_path)
+            response = reader.read(file_path=file_path).get_tags()
             if not all(self._get_tags(response)):
                 responses.append(response)
                 continue
