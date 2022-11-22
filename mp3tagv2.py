@@ -116,4 +116,4 @@ if __name__ == "__main__":
     tag = Mp3Tag(
         source_folder=Path(source), destination_folder=Path(target_folder)
     )
-    tag.get_tags(Path.cwd(), ShazamIOReader())
+    tag.tag_media_files()

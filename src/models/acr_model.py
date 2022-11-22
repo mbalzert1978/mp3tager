@@ -66,34 +66,40 @@ class ACRCloudModel(BaseModel):
 
     @property
     def musik_item(self) -> MusicItem | None:
-        if not self.result:
-            return None
-        return fetch_one(self.result.music)
+        return fetch_one(self.result.music) if self.result else None
 
     def get_tags(self) -> dict[str, str]:
-        if not self.result:
-            return {
+        return (
+            {
+                "artist": sanatize(fetch_one(self.musik_item.artists).name),
+                "album": sanatize(self.musik_item.album.name),
+                "title": sanatize(self.musik_item.title),
+            }
+            if self.result
+            else {
                 "artist": Tags.ARTIST.value,
                 "album": Tags.ALBUM.value,
                 "title": Tags.TITLE.value,
             }
-        return {
-            "artist": sanatize(fetch_one(self.musik_item.artists).name),
-            "album": sanatize(self.musik_item.album.name),
-            "title": sanatize(self.musik_item.title),
-        }
+        )
 
     def get_artist(self) -> str:
-        if not self.result:
-            return Tags.ARTIST.value
-        return sanatize(fetch_one(self.musik_item.artists).name)
+        return (
+            sanatize(fetch_one(self.musik_item.artists).name)
+            if self.result
+            else Tags.ARTIST.value
+        )
 
     def get_album(self) -> str:
-        if not self.result:
-            return Tags.ALBUM.value
-        return sanatize(self.musik_item.album.name)
+        return (
+            sanatize(self.musik_item.album.name)
+            if self.result
+            else Tags.ALBUM.value
+        )
 
     def get_title(self) -> str:
-        if not self.result:
-            return Tags.TITLE.value
-        return sanatize(self.musik_item.title)
+        return (
+            sanatize(self.musik_item.title)
+            if self.result
+            else Tags.TITLE.value
+        )

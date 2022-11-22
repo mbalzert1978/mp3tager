@@ -110,16 +110,12 @@ class TagModel(BaseModel):
         }
 
     def get_artist(self) -> str:
-        if not self.result:
-            return Tags.ARTIST.value
-        return sanatize(self.result.artist)
+        return (
+            sanatize(self.result.artist) if self.result else Tags.ARTIST.value
+        )
 
     def get_album(self) -> str:
-        if not self.result:
-            return Tags.ALBUM.value
-        return sanatize(self.result.album)
+        return sanatize(self.result.album) if self.result else Tags.ALBUM.value
 
     def get_title(self) -> str:
-        if not self.result:
-            return Tags.TITLE.value
-        return sanatize(self.result.title)
+        return sanatize(self.result.title) if self.result else Tags.TITLE.value

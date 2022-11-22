@@ -10,16 +10,13 @@ def sanatize(value: str) -> str:
         char
         for char in value
         if char
-        in (
-            char
-            for char in (
-                string.ascii_lowercase
-                + string.ascii_uppercase
-                + string.digits
-                + " "
-                + "-"
-                + "_"
-            )
+        in iter(
+            string.ascii_lowercase
+            + string.ascii_uppercase
+            + string.digits
+            + " "
+            + "-"
+            + "_"
         )
     ).strip()
 

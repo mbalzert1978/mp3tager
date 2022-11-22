@@ -1,12 +1,13 @@
-import asyncio
 import os
 from pathlib import Path
 
 import acrcloud
 import requests
+import spotipy
 from dotenv import load_dotenv
 from mediafile import MediaFile
 from shazamio import Shazam
+from spotipy.oauth2 import SpotifyClientCredentials
 
 from ..models.acr_model import ACRCloudModel
 from ..models.aud_model import AudDModel
@@ -88,9 +89,41 @@ class ACRCloudReader(Reader):
         }
 
 
+class AudioTagReader(Reader):
+    """Uses audiotag.info api with 1mb data from the file
+    to recognize music in media files.
+    """
+
+    def read(self, file_path: Path) -> ModelBase:
+        """
+        Call api and create tags from received data.
+
+        Args:
+            file: media file
+
+        Returns:
+            ModelBase
+        """
+        provider = acrcloud.ACRcloud(self._prepare_credentials())
+        return ACRCloudModel(**provider.recognize_audio(file_path))
+
+    def _prepare_credentials(self) -> str:
+        load_dotenv()
+        return {
+            "key": os.getenv("ACCESS_KEY"),
+            "secret": os.getenv("SECRET_KEY"),
+            "host": os.getenv("ACR_HOST"),
+        }
+
+
 class ShazamIOReader(Reader):
     async def read(self, file_path: Path) -> ModelBase:
         shaz = Shazam()
         out = await shaz.recognize_song(file_path)
         print(out)
         print()
+
+
+class SpotifyReader(Reader):
+    def read(self, file_path: Path) -> ModelBase:
+        return super().read(file_path)
