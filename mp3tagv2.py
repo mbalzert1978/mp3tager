@@ -48,11 +48,11 @@ def multi_mp3tag(
         tags = {}
         for reader in readers:
             artist = tags.get("artist")
-            if not artist or artist == Tags.ARTIST.value:
+            if not artist or artist == "unknown_artist":
                 artist = reader.read(file_path=file).get_artist()
                 tags["artist"] = artist
             album = tags.get("album")
-            if not album or album == Tags.ALBUM.value:
+            if not album or album == "unknown_album":
                 album = reader.read(file_path=file).get_album()
                 tags["album"] = album
             title = tags.get("title")
@@ -84,9 +84,9 @@ class Mp3Tag:
         for file in files:
             ext = file.suffix
             for reader in self.readers:
-                if not self.artist or self.artist == Tags.ARTIST.value:
+                if not self.artist or self.artist == str(Tags.ARTIST):
                     self.artist = reader.read(file_path=file).get_artist()
-                if not self.album or self.album == Tags.ALBUM.value:
+                if not self.album or self.album == str(Tags.ALBUM):
                     self.album = reader.read(file_path=file).get_album()
                 if not self.title or UUID4.match(self.title):
                     self.title = reader.read(file_path=file).get_title()

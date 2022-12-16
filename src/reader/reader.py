@@ -3,18 +3,17 @@ from pathlib import Path
 
 import acrcloud
 import requests
-import spotipy
 from dotenv import load_dotenv
 from mediafile import MediaFile
 from shazamio import Shazam
-from spotipy.oauth2 import SpotifyClientCredentials
 
 from ..models.acr_model import ACRCloudModel
 from ..models.aud_model import AudDModel
 from ..models.base import ModelBase
-from ..models.tag_enum import Tags
 from ..models.tag_model import Result, TagModel
 from .base import Reader
+
+load_dotenv()
 
 
 class TagReader(Reader):
@@ -42,7 +41,7 @@ class AudDReader(Reader):
             ModelBase
         """
 
-        data = self._prepare_data()
+        data = self._prepare_credentials()
         with file_path.open("rb") as file:
             files = {"file": file.read(self.BYTES_TO_READ)}
             return self._call_api(data, files)
@@ -55,7 +54,7 @@ class AudDReader(Reader):
             response.encoding = "utf-8"
             return AudDModel(**response.json())
 
-    def _prepare_data(self) -> dict[str, str]:
+    def _prepare_credentials(self) -> dict[str, str]:
         return {
             "api_token": os.getenv("API_KEY"),
             "return": "apple_music,spotify",
@@ -81,7 +80,6 @@ class ACRCloudReader(Reader):
         return ACRCloudModel(**provider.recognize_audio(file_path))
 
     def _prepare_credentials(self) -> str:
-        load_dotenv()
         return {
             "key": os.getenv("ACCESS_KEY"),
             "secret": os.getenv("SECRET_KEY"),
@@ -108,7 +106,6 @@ class AudioTagReader(Reader):
         return ACRCloudModel(**provider.recognize_audio(file_path))
 
     def _prepare_credentials(self) -> str:
-        load_dotenv()
         return {
             "key": os.getenv("ACCESS_KEY"),
             "secret": os.getenv("SECRET_KEY"),

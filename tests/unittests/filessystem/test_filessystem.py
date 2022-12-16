@@ -9,12 +9,13 @@ def test_get_all_media_files() -> None:
     media = MediaTagFileSystem()
     try:
         source = tempfile.mkdtemp()
+        (Path(source) / "one_down").mkdir()
         expected = (
             (Path(source) / "my-file.mp3"),
             (Path(source) / "my-file.ogg"),
             (Path(source) / "my-file.flac"),
             (Path(source) / "my-file"),
-            (Path(source) / "my-file.exe"),
+            (Path(source) / "one_down" / "my-file.exe"),
         )
         _ = [x.touch() for x in expected]
         files = tuple(media.get(Path(source)))

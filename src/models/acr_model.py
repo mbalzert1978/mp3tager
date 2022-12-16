@@ -77,9 +77,9 @@ class ACRCloudModel(BaseModel):
             }
             if self.result
             else {
-                "artist": Tags.ARTIST.value,
-                "album": Tags.ALBUM.value,
-                "title": Tags.TITLE.value,
+                "artist": str(Tags.ARTIST),
+                "album": str(Tags.ALBUM),
+                "title": str(Tags.TITLE),
             }
         )
 
@@ -87,19 +87,17 @@ class ACRCloudModel(BaseModel):
         return (
             sanatize(fetch_one(self.musik_item.artists).name)
             if self.result
-            else Tags.ARTIST.value
+            else str(Tags.ARTIST)
         )
 
     def get_album(self) -> str:
         return (
             sanatize(self.musik_item.album.name)
             if self.result
-            else Tags.ALBUM.value
+            else str(Tags.ALBUM)
         )
 
     def get_title(self) -> str:
         return (
-            sanatize(self.musik_item.title)
-            if self.result
-            else Tags.TITLE.value
+            sanatize(self.musik_item.title) if self.result else str(Tags.TITLE)
         )

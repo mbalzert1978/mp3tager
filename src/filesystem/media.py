@@ -1,7 +1,6 @@
 import os
 import shutil
 from pathlib import Path
-from typing import Generator
 
 
 class MediaTagFileSystem:
@@ -23,18 +22,15 @@ class MediaTagFileSystem:
         ".dsf",
     )
 
-    def _get(self, root: Path) -> Generator[Path, None, None]:
+    def get(self, root: Path) -> list[Path]:
+        path_objects = []
         for folder, _, files in os.walk(root):
-            for file_name in files:
-                if not file_name.endswith(self.AUDIO_FILE_EXTENSIONS):
-                    continue
-                yield Path(folder) / file_name
-
-    def get(self, root: Path) -> Generator[Path, None, None]:
-        for file in root.rglob("*"):
-            if not file.suffix.endswith(self.AUDIO_FILE_EXTENSIONS):
-                continue
-            yield file
+            path_objects.extend(
+                Path(folder) / file_name
+                for file_name in files
+                if file_name.endswith(self.AUDIO_FILE_EXTENSIONS)
+            )
+        return path_objects
 
     def copy(self, root: Path, dest: Path) -> None:
         shutil.copy(root, dest)
