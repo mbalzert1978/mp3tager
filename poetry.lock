@@ -570,7 +570,7 @@ python-versions = ">=3.7"
 name = "sourcery-cli"
 version = "0.13.0"
 description = "Magically refactor Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -652,7 +652,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "cd4429c98d41bca795c25f88f880d1ae7a5f0f3365422a825f13cdd9d2c40e65"
+content-hash = "0d56f747a8f9a59a56ef0e1108812ce23bd4aad160b8919691c6313e260eda97"
 
 [metadata.files]
 aiofiles = [

@@ -5,6 +5,7 @@ import acrcloud
 import requests
 from dotenv import load_dotenv
 from mediafile import MediaFile
+from mutagen import File
 from shazamio import Shazam
 
 from ..models.acr_model import ACRCloudModel
@@ -20,6 +21,11 @@ class TagReader(Reader):
     def read(self, file_path: Path) -> ModelBase:
         result = Result(**MediaFile(file_path).as_dict())
         return TagModel(result=result)
+
+
+class MutagenReader(Reader):
+    def read(self, file_path: Path) -> ModelBase:
+        return File(file_path)
 
 
 class AudDReader(Reader):

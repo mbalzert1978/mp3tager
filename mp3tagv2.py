@@ -80,7 +80,7 @@ class Mp3Tag:
         self.title = ""
 
     def tag_media_files(self) -> None:
-        files = self.filesystem.get(self.source)
+        files = self.filesystem.oldget(self.source)
         for file in files:
             ext = file.suffix
             for reader in self.readers:
@@ -103,7 +103,7 @@ class Mp3Tag:
     def get_tags(
         self, file: Path, reader: Reader = TagReader()
     ) -> dict[str, str]:
-        file = fetch_one(self.filesystem.get(file))
+        file = fetch_one(self.filesystem.oldget(file))
         return reader.read(file)
 
 

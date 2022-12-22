@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 class MediaTagFileSystem:
-    AUDIO_FILE_EXTENSIONS = (
+    AUDIO_FILE_EXTENSIONS = {
         ".alac",
         ".m4a",
         ".aac",
@@ -20,9 +20,9 @@ class MediaTagFileSystem:
         ".asf",
         ".aiff",
         ".dsf",
-    )
+    }
 
-    def get(self, root: Path) -> list[Path]:
+    def oldget(self, root: Path) -> list[Path]:
         path_objects = []
         for folder, _, files in os.walk(root):
             path_objects.extend(
@@ -31,6 +31,13 @@ class MediaTagFileSystem:
                 if file_name.endswith(self.AUDIO_FILE_EXTENSIONS)
             )
         return path_objects
+
+    def get(self, root: Path) -> set[Path]:
+        return {
+            file
+            for file in root.rglob("*")
+            if file.is_file() and file.suffix in self.AUDIO_FILE_EXTENSIONS
+        }
 
     def copy(self, root: Path, dest: Path) -> None:
         shutil.copy(root, dest)
