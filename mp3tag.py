@@ -69,15 +69,12 @@ def _sanatize(value: str) -> str:
         letter
         for letter in value
         if letter
-        in (
-            letter
-            for letter in (
-                string.ascii_lowercase
-                + string.ascii_uppercase
-                + string.digits
-                + " "
-                + "-"
-            )
+        in iter(
+            string.ascii_lowercase
+            + string.ascii_uppercase
+            + string.digits
+            + " "
+            + "-"
         )
     ).strip()
 
